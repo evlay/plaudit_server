@@ -7,6 +7,7 @@ import { IsString, validate } from 'class-validator'
 import { NextFunction } from 'express'
 import { plainToClass } from 'class-transformer'
 import 'reflect-metadata'
+import { RSA_NO_PADDING } from 'constants'
 
 class PostController implements Controller {
   public path = '/posts'
@@ -19,6 +20,7 @@ class PostController implements Controller {
 
   public initializeRoutes() {
     this.router.get(this.path, this.getAllPosts)
+    this.router.get(`${this.path}/:username`, this.getAllPostsFromUser)
     this.router.post(this.path, this.createPost)
     this.router.get(`${this.path}/:id`, this.getPostById)
     this.router.patch(`${this.path}/:id`, this.updatePostById)
@@ -28,14 +30,37 @@ class PostController implements Controller {
   }
 
   private getAllPosts = (req: express.Request, res: express.Response) => {
-    this.post.find(function (results, err) {
-      if (err) {
-        res.send(err)
-      } else {
-        res.send(results)
-      }
-    })
-    .sort({createdOn: 'descending'})
+    this.post
+      .find(function (results, err) {
+        if (err) {
+          res.send(err)
+        } else {
+          res.send(results)
+        }
+      })
+      .sort({ createdOn: 'descending' })
+  }
+
+  private getAllPostsFromUser = (
+    req: express.Request,
+    res: express.Response
+  ) => {
+    if (!req.params.username) {
+      res.send('username is required')
+    } else {
+      this.post
+        .find({
+          username: req.params.username,
+        })
+        .sort({ createdOn: 'descending' })
+        .then((results) => {
+          res.send(results)
+        })
+        .catch((error) => {
+          res.send(error)
+          console.log(error)
+        })
+    }
   }
 
   private createPost = (req: express.Request, res: express.Response) => {
@@ -81,21 +106,25 @@ class PostController implements Controller {
       })
   }
 
-  private upvotePostById = async (req: express.Request, res: express.Response) => {
+  private upvotePostById = async (
+    req: express.Request,
+    res: express.Response
+  ) => {
     const id = req.params.id
     const upvoteUsername = req.body.username
 
     if (!id || !upvoteUsername) {
       res.send('username and post id are required')
     } else {
-       this.post.findById(id)
-        .then(post => {
-          if(post == null) { 
+      this.post
+        .findById(id)
+        .then((post) => {
+          if (post == null) {
             res.status(400).send('post was null')
             return
-           }
-          
-          if(post.upvotes.includes(upvoteUsername)){
+          }
+
+          if (post.upvotes.includes(upvoteUsername)) {
             res.send('user already upvoted this post')
           } else {
             post.upvotes.push(upvoteUsername)
@@ -103,7 +132,7 @@ class PostController implements Controller {
             res.send(`post ${post._id} upvoted by ${upvoteUsername}`)
           }
         })
-        .catch(error => {
+        .catch((error) => {
           res.send(error)
         })
     }
@@ -115,28 +144,31 @@ class PostController implements Controller {
     if (!id || !removeUsername) {
       res.send('username and post id are required')
     } else {
-      this.post.findById(id)
-        .then(post => {
-          if(post == null) { 
+      this.post
+        .findById(id)
+        .then((post) => {
+          if (post == null) {
             res.status(400).send('post was null')
             return
-           }
-           if(post.upvotes.includes(removeUsername)){
-             const index = post.upvotes.indexOf(removeUsername)
-             if(index > -1){
-               post.upvotes.splice(index, 1)
-             }
-             post.save()
-            res.send(`username ${removeUsername} removed upvote from post ${post._id}`)
-           } else {
-             res.send(`username ${removeUsername} not found on post ${post._id}`)
-           }
+          }
+          if (post.upvotes.includes(removeUsername)) {
+            const index = post.upvotes.indexOf(removeUsername)
+            if (index > -1) {
+              post.upvotes.splice(index, 1)
+            }
+            post.save()
+            res.send(
+              `username ${removeUsername} removed upvote from post ${post._id}`
+            )
+          } else {
+            res.send(`username ${removeUsername} not found on post ${post._id}`)
+          }
         })
-        .catch(err => {
+        .catch((err) => {
           res.send(err)
         })
     }
-  } 
+  }
 
   private updatePostById = (req: express.Request, res: express.Response) => {
     this.post
