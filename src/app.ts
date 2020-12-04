@@ -1,12 +1,12 @@
 import express from 'express'
 import mongoose from 'mongoose'
-import dotenv from 'dotenv'
+import * as dotenv from 'dotenv'
 import loggerMiddleware from './middleware/logger.middleware'
 import cors from 'cors'
 import rateLimit from 'express-rate-limit'
 // import errorMiddleware from './middleware/error.middleware'
 
-dotenv.config()
+require('dotenv').config({path: `${__dirname}/../.env`})
 
 class App {
   public app: express.Application
