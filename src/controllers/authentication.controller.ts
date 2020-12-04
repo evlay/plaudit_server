@@ -4,7 +4,6 @@ import bcrypt from 'bcrypt'
 import PlauditUser from '../interfaces/plauditUser.interface'
 import PlauditUserModel from '../models/plauditUser.model'
 import { NextFunction } from 'express'
-import { ReplSet } from 'typeorm'
 require('dotenv').config()
 
 class AuthenticationController implements Controller {
