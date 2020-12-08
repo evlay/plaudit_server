@@ -4,6 +4,7 @@ import * as dotenv from 'dotenv'
 import loggerMiddleware from './middleware/logger.middleware'
 import cors from 'cors'
 import rateLimit from 'express-rate-limit'
+import cookieParser from 'cookie-parser'
 // import errorMiddleware from './middleware/error.middleware'
 
 require('dotenv').config({path: `${__dirname}/../.env`})
@@ -34,6 +35,7 @@ class App {
       max: 100, // limit each IP to 100 requests per windowMs
       message: "too many request from this IP in the last 15 minutes"
     }))
+    this.app.use(cookieParser(process.env.COOKIES_SECRET))
   }
 
   private initializeErrorHandler(){

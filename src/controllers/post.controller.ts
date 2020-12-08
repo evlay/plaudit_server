@@ -7,7 +7,7 @@ import { IsString, validate } from 'class-validator'
 import { NextFunction } from 'express'
 import { plainToClass } from 'class-transformer'
 import 'reflect-metadata'
-import { RSA_NO_PADDING } from 'constants'
+import verifyToken from '../middleware/verifyToken.middleware'
 
 class PostController implements Controller {
   public path = '/posts'
@@ -19,26 +19,26 @@ class PostController implements Controller {
   }
 
   public initializeRoutes() {
-    this.router.get(this.path, this.getAllPosts)
-    this.router.get(`${this.path}/:username`, this.getAllPostsFromUser)
-    this.router.post(this.path, this.createPost)
-    this.router.get(`${this.path}/:id`, this.getPostById)
-    this.router.patch(`${this.path}/:id`, this.updatePostById)
-    this.router.patch(`${this.path}/upvote/:id`, this.upvotePostById)
-    this.router.patch(`${this.path}/downvote/:id`, this.removeUpvoteById)
-    this.router.delete(`${this.path}/:id`, this.deletePostById)
+    this.router.get(this.path, verifyToken,this.getAllPosts)
+    this.router.get(`${this.path}/:username`, verifyToken, this.getAllPostsFromUser)
+    this.router.post(this.path, verifyToken, this.createPost)
+    this.router.get(`${this.path}/:id`, verifyToken, this.getPostById)
+    this.router.patch(`${this.path}/:id`, verifyToken, this.updatePostById)
+    this.router.patch(`${this.path}/upvote/:id`, verifyToken, this.upvotePostById)
+    this.router.patch(`${this.path}/downvote/:id`, verifyToken, this.removeUpvoteById)
+    this.router.delete(`${this.path}/:id`, verifyToken, this.deletePostById)
   }
 
   private getAllPosts = (req: express.Request, res: express.Response) => {
-    this.post
-      .find(function (results, err) {
-        if (err) {
-          res.send(err)
-        } else {
-          res.send(results)
-        }
-      })
-      .sort({ createdOn: 'descending' })
+      this.post
+        .find(function (results, err) {
+          if (err) {
+            res.send(err)
+          } else {
+            res.send(results)
+          }
+        })
+        .sort({ createdOn: 'descending' })
   }
 
   private getAllPostsFromUser = (
