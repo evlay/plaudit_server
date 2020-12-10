@@ -5,9 +5,10 @@ import loggerMiddleware from './middleware/logger.middleware'
 import cors from 'cors'
 import rateLimit from 'express-rate-limit'
 import cookieParser from 'cookie-parser'
+import { Cookie } from 'cookies'
 // import errorMiddleware from './middleware/error.middleware'
 
-require('dotenv').config({path: `${__dirname}/../.env`})
+require('dotenv').config({ path: `${__dirname}/../.env` })
 
 class App {
   public app: express.Application
@@ -29,16 +30,20 @@ class App {
   private initializeMiddlewares() {
     this.app.use(loggerMiddleware)
     this.app.use(express.json())
-    this.app.use(cors())
-    this.app.use(rateLimit({
-      windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 100, // limit each IP to 100 requests per windowMs
-      message: "too many request from this IP in the last 15 minutes"
-    }))
-    this.app.use(cookieParser(process.env.COOKIES_SECRET))
+    this.app.use(
+      cors({ origin: ['http://localhost:8080', 'https://localhost:8080'], credentials: true, exposedHeaders: ['set-cookie'] })
+    )
+    this.app.use(
+      rateLimit({
+        windowMs: 15 * 60 * 1000, // 15 minutes
+        max: 100, // limit each IP to 100 requests per windowMs
+        message: 'too many request from this IP in the last 15 minutes',
+      })
+    )
+    this.app.use(cookieParser())
   }
 
-  private initializeErrorHandler(){
+  private initializeErrorHandler() {
     // this.app.use(errorMiddleware)
   }
 
@@ -53,7 +58,7 @@ class App {
       .connect(process.env.MONGO_URI, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
-        useFindAndModify: false
+        useFindAndModify: false,
       })
       .catch((err) => console.log(err))
   }

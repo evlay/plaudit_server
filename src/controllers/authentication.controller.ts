@@ -23,7 +23,7 @@ class AuthenticationController implements Controller {
     this.router.post(`${this.path}/register`, this.createPlauditUser)
     this.router.post(`${this.path}/login`, this.login)
     this.router.post(`${this.path}/token`, this.getToken)
-    this.router.post(`${this.path}/cookies`, this.cookiesTest)
+    this.router.get(`${this.path}/cookie-test`, this.cookiesTest)
   }
 
   private login = async (
@@ -61,7 +61,12 @@ class AuthenticationController implements Controller {
                   { data: loginUser },
                   process.env.REFRESH_TOKEN_SECRET as string,
                 )
-                res.json({ authToken, refreshToken })
+                res
+                  .cookie('plauditAuthUser', authToken, {maxAge: 5 * 60 * 1000})
+                  // .cookie('plauditRefreshUser', refreshToken, {maxAge: 24 * 60 * 60 * 1000})
+                  .send(`${loginUser} successfully logged in`)
+                  console.log(`cookie set for user ${loginUser}`)
+
               } else if (results === false) {
                 res.send('login failed')
               }
@@ -72,13 +77,16 @@ class AuthenticationController implements Controller {
     }
   }
 
+  private getCookie (req: express.Request) {
+    var cookie = req.headers.cookie
+    return cookie
+  }
+
   private cookiesTest = (
     req: express.Request,
     res: express.Response,
   ) => {
-    res.json({
-      cookies: req.cookies
-    })
+    res.json({cookie: this.getCookie(req)})
   }
 
   private getToken = (
