@@ -22,8 +22,7 @@ class AuthenticationController implements Controller {
   public initializeRoutes() {
     this.router.post(`${this.path}/register`, this.createPlauditUser)
     this.router.post(`${this.path}/login`, this.login)
-    this.router.post(`${this.path}/token`, this.getToken)
-    this.router.get(`${this.path}/cookie-test`, this.cookiesTest)
+    this.router.post(`${this.path}/token`, this.getAuthTokenWithRefresh)
   }
 
   private login = async (
