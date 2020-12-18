@@ -1,28 +1,28 @@
-import {NextFunction, Request, Response} from "express";
+import { NextFunction, Request, Response } from 'express'
 import jwt from 'jsonwebtoken'
+import HttpException from '../exceptions/HttpException'
 
 const verifyToken = (req: Request, res: Response, next: NextFunction) => {
-    const cookie = req.headers.cookie;
-    if(typeof cookie === undefined) {
-      next('unauthorized')
-    }
-    if(typeof cookie === "string") {
-      if(!cookie.split('=')[1]) {
-        next('unauthorized')
-      }
-      const token = cookie.split('=')[1]
-      jwt.verify(token, process.env.AUTH_TOKEN_SECRET as string, (err: any , decoded: any) => {
-        if(err) {
+  const authHeader = req.header('Authorization') || 'bad authoirzation header'
+  if(!authHeader) {
+    next(new HttpException('Authorization header is required', 401))
+  }
+    const token = authHeader.split(' ')[1]
+    jwt.verify(
+      token,
+      process.env.AUTH_TOKEN_SECRET as string,
+      (err: any, decoded: any) => {
+        if (err) {
           console.log(err)
-           next(new Error(err))
+          next(new HttpException(err, 403))
         }
-        if(decoded) {
+        if (decoded) {
           req.user = decoded.data
+          console.log(`${decoded.data} authed`)
           next()
         }
-      })
-    }
-} 
+      }
+    )
+  }
 
-export default verifyToken;
-
+export default verifyToken

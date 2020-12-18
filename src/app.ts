@@ -2,11 +2,10 @@ import express from 'express'
 import mongoose from 'mongoose'
 import * as dotenv from 'dotenv'
 import loggerMiddleware from './middleware/logger.middleware'
+import errorMiddleware from './middleware/error.middleware'
 import cors from 'cors'
 import rateLimit from 'express-rate-limit'
 import cookieParser from 'cookie-parser'
-import { Cookie } from 'cookies'
-// import errorMiddleware from './middleware/error.middleware'
 
 require('dotenv').config({ path: `${__dirname}/../.env` })
 
@@ -44,7 +43,7 @@ class App {
   }
 
   private initializeErrorHandler() {
-    // this.app.use(errorMiddleware)
+    this.app.use(errorMiddleware)
   }
 
   private initializeControllers(controllers: any) {

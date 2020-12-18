@@ -60,11 +60,13 @@ class AuthenticationController implements Controller {
                 const refreshToken = jwt.sign(
                   { data: loginUser },
                   process.env.REFRESH_TOKEN_SECRET as string,
+                  { expiresIn: '24h' }
                 )
                 res
-                  .cookie('plauditAuthUser', authToken, {maxAge: 5 * 60 * 1000})
-                  // .cookie('plauditRefreshUser', refreshToken, {maxAge: 24 * 60 * 60 * 1000})
-                  .send(`${loginUser} successfully logged in`)
+                  .json({
+                    plauditAuthToken: authToken,
+                    plauditRefreshToken: refreshToken
+                  })
                   console.log(`cookie set for user ${loginUser}`)
 
               } else if (results === false) {
@@ -77,23 +79,16 @@ class AuthenticationController implements Controller {
     }
   }
 
-  private getCookie (req: express.Request) {
-    var cookie = req.headers.cookie
-    return cookie
-  }
 
-  private cookiesTest = (
-    req: express.Request,
-    res: express.Response,
-  ) => {
-    res.json({cookie: this.getCookie(req)})
-  }
-
-  private getToken = (
+  private getAuthTokenWithRefresh (
     req: express.Request,
     res: express.Response
-    ) => {
-      console.log('get token')
+  ) {
+    // check against blacklist of tokens
+
+    // check for auth token and validate
+
+    // check for refresh token and validate
   }
 
   private getAllPlauditUsers = (
