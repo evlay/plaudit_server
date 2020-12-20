@@ -9,6 +9,7 @@ import jwt from 'jsonwebtoken'
 import verifyToken from '../middleware/verifyToken.middleware'
 import { isToken } from 'typescript'
 import { isEmpty } from 'class-validator'
+import HttpException from '../exceptions/HttpException'
 
 require('dotenv').config({ path: `${__dirname}/../../.env` })
 
@@ -65,9 +66,9 @@ class AuthenticationController implements Controller {
                   plauditAuthToken: authToken,
                   plauditRefreshToken: refreshToken,
                 })
-                console.log(`cookie set for user ${loginUser}`)
+                console.log(`${loginUser} logged in`)
               } else if (results === false) {
-                res.send('login failed')
+                 next(new HttpException('login credentials incorrect', 401))
               }
             })
           }
@@ -106,6 +107,18 @@ class AuthenticationController implements Controller {
     }
   }
 
+  private getDecodedAuthToken = async (authToken: string): Promise<any> => {
+    try {
+      return jwt.verify(
+        authToken,
+        process.env.AUTH_TOKEN_SECRET as string
+      )
+    } catch (error) {
+      console.error(error)
+      return ''
+    }
+  }
+
   private async isRefreshtokenBlacklisted(refreshToken: string) {
     let isBlacklisted = false
     await this.blacklistedRefreshToken
@@ -130,13 +143,13 @@ class AuthenticationController implements Controller {
     // check against blacklist of tokens
     const isBlacklisted = await this.isRefreshtokenBlacklisted(refreshToken)
     if (isBlacklisted) {
-      res.status(403).send('token is blacklisted')
+      res.status(401).send('token is blacklisted')
     } else {
       const decoded = await this.getDecodedRefreshToken(refreshToken)
       if(decoded.data == username){
         res.json({ authToken: await this.genAuthToken(username) })
       } else {
-        res.status(403).send('username did not match username')
+        res.status(401).send('username did not match username')
       }
     }  
   }
