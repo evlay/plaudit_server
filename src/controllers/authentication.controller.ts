@@ -169,6 +169,7 @@ class AuthenticationController implements Controller {
       await this.blacklistedRefreshToken
         .create({ refreshToken, username })
         .then((results) => {
+          console.log('token blacklisted for ' + username)
           res.json({ results })
         })
         .catch((error) => res.status(500).json({ error }))
