@@ -143,13 +143,15 @@ class AuthenticationController implements Controller {
     // check against blacklist of tokens
     const isBlacklisted = await this.isRefreshtokenBlacklisted(refreshToken)
     if (isBlacklisted) {
-      res.status(401).send('token is blacklisted')
+      res.status(403).send('token is blacklisted')
     } else {
       const decoded = await this.getDecodedRefreshToken(refreshToken)
       if(decoded.data == username){
-        res.json({ authToken: await this.genAuthToken(username) })
+        const newAuthToken = await this.genAuthToken(username)
+        console.log(`new auth token for ${username}: ` + newAuthToken)
+        res.json({ authToken:  newAuthToken })
       } else {
-        res.status(401).send('username did not match username')
+        res.status(403).send('username did not match username')
       }
     }  
   }
